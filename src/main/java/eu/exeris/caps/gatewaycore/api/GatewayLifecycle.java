@@ -9,7 +9,7 @@ import java.util.List;
  * Lifecycle and state controller for the Exeris Gateway runtime.
  *
  * <p>Integrates with the platform's four-phase lifecycle:
- * {@code initialize} -> {@code ready} -> {@code drain} -> {@code terminate}.
+ * {@code initialize}, {@code ready}, {@code drain}, {@code terminate}, in that order.
  *
  * @since 0.1.0
  */

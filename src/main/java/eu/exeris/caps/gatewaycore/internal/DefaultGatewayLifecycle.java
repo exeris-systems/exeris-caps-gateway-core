@@ -87,7 +87,7 @@ public final class DefaultGatewayLifecycle implements GatewayLifecycle {
     }
 
     @Override
-    public void ready() throws Exception {
+    public synchronized void ready() throws Exception {
         State current = state.get();
         if (current == State.READY) {
             // Idempotent replay: hooks already ran for this transition
