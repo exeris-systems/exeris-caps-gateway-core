@@ -1,0 +1,38 @@
+{
+  "schemaVersion" : 2,
+  "stamp" : {
+    "validated" : true,
+    "compositionVersion" : "0.0.0",
+    "contentBinding" : "sha256:d80a5b99888418f71fb7739f5057709251c5df6e7f5f0982ba6f7d132d10ff00"
+  },
+  "modules" : [
+    {
+      "name" : "GatewayCoreModule",
+      "packageName" : "eu.exeris.caps.gatewaycore",
+      "qualifiedName" : "eu.exeris.caps.gatewaycore.GatewayCoreModule",
+      "module" : {
+        "provides" : [
+          {
+            "service" : "eu.exeris.caps.gatewaycore.api.GatewayLifecycle",
+            "version" : "0.1.0"
+          },
+          {
+            "service" : "eu.exeris.caps.gatewaycore.api.IngressBootstrap",
+            "version" : "0.1.0"
+          },
+          {
+            "service" : "eu.exeris.caps.gatewaycore.api.PolicyChain",
+            "version" : "0.1.0"
+          }
+        ],
+        "requires" : [ ],
+        "lifecycleOwner" : "eu.exeris.caps.gatewaycore.GatewayCoreModule"
+      }
+    }
+  ],
+  "resolutions" : [ ],
+  "initOrder" : [
+    "eu.exeris.caps.gatewaycore.GatewayCoreModule"
+  ],
+  "warnings" : [ ]
+}
