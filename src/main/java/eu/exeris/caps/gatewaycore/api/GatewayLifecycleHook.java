@@ -16,12 +16,21 @@ public interface GatewayLifecycleHook {
     /**
      * Invoked during the {@code initialize} phase in forward registration order.
      *
+     * <p>Fail-stop: if a hook throws, the exception propagates from
+     * {@link GatewayLifecycle#initialize()}, later hooks do not run, the state stays
+     * {@code INITIALIZING} (never {@code READY}), a replayed {@code initialize()} re-throws the
+     * same failure, and {@code ready()} is refused. The gateway is then only terminated.
+     *
      * @throws Exception if initialization fails
      */
     default void onGatewayInitialize() throws Exception {}
 
     /**
      * Invoked during the {@code ready} phase in forward registration order.
+     *
+     * <p>Runs before the transition to {@code READY}: {@code isAcceptingTraffic()} is false until
+     * every ready hook has returned. If a hook throws, the state does not change and no traffic is
+     * accepted.
      *
      * @throws Exception if readiness verification fails
      */

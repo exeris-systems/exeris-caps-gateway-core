@@ -62,7 +62,8 @@ public interface IngressBootstrap extends HttpHandler {
     HttpHandler delegateHandler();
 
     /**
-     * Returns an unmodifiable snapshot of registered path-prefix handlers.
+     * Returns an immutable snapshot of registered path-prefix handlers; later registrations
+     * and removals are not reflected in a map already returned.
      *
      * @return map of path prefixes to handlers
      */

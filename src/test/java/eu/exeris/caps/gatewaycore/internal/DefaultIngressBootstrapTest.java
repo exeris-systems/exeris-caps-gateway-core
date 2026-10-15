@@ -274,4 +274,19 @@ class DefaultIngressBootstrapTest {
         assertThat(ex.response().headers())
                 .anyMatch(h -> h.nameEqualsIgnoreCase("X-Gateway-Decorated") && h.value().equals("true"));
     }
+
+    @Test
+    @DisplayName("registeredHandlers is a snapshot: later changes do not appear in a map already returned")
+    void registeredHandlersIsSnapshot() {
+        ingress.registerHandler("/a", ex -> ex.respond(HttpStatus.OK));
+        var snapshot = ingress.registeredHandlers();
+
+        ingress.registerHandler("/b", ex -> ex.respond(HttpStatus.OK));
+        ingress.unregisterHandler("/a");
+
+        assertThat(snapshot).containsOnlyKeys("/a");
+        assertThat(ingress.registeredHandlers()).containsOnlyKeys("/b");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> snapshot.put("/c", ex -> { }))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
 }

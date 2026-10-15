@@ -8,7 +8,6 @@ import eu.exeris.kernel.spi.http.HttpExchange;
 import eu.exeris.kernel.spi.http.HttpHandler;
 import eu.exeris.kernel.spi.http.HttpStatus;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,7 +76,7 @@ public final class DefaultIngressBootstrap implements IngressBootstrap {
 
     @Override
     public Map<String, HttpHandler> registeredHandlers() {
-        return Collections.unmodifiableMap(prefixHandlers);
+        return Map.copyOf(prefixHandlers);
     }
 
     @Override

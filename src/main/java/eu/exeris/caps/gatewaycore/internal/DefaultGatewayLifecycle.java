@@ -27,6 +27,7 @@ public final class DefaultGatewayLifecycle implements GatewayLifecycle {
     private final List<GatewayLifecycleHook> hooks = new CopyOnWriteArrayList<>();
     private final LongAdder servedRequests = new LongAdder();
     private volatile Instant readySince;
+    private volatile Exception initializeFailure;
 
     @Override
     public State state() {
@@ -66,35 +67,54 @@ public final class DefaultGatewayLifecycle implements GatewayLifecycle {
     @Override
     public void initialize() throws Exception {
         if (!state.compareAndSet(State.NEW, State.INITIALIZING)) {
-            // Idempotent replay support per ADR-024
+            // Idempotent replay per ADR-024; a failed first run is re-thrown, never swallowed
+            Exception failure = initializeFailure;
+            if (failure != null) {
+                throw failure;
+            }
             return;
         }
 
-        for (GatewayLifecycleHook hook : hooks) {
-            hook.onGatewayInitialize();
+        try {
+            for (GatewayLifecycleHook hook : hooks) {
+                hook.onGatewayInitialize();
+            }
+        } catch (Exception e) {
+            // Fail-stop: the state stays INITIALIZING (never READY), so no traffic is accepted
+            initializeFailure = e;
+            throw e;
         }
     }
 
     @Override
     public void ready() throws Exception {
-        while (true) {
-            State current = state.get();
-            if (current == State.READY) {
-                // Idempotent replay: hooks already ran for this transition
-                return;
-            }
-            if (current == State.DRAINING || current == State.TERMINATED) {
-                throw new IllegalStateException("Cannot transition to READY from " + current + " state");
-            }
-            if (state.compareAndSet(current, State.READY)) {
-                break;
-            }
+        State current = state.get();
+        if (current == State.READY) {
+            // Idempotent replay: hooks already ran for this transition
+            return;
         }
-        readySince = Instant.now();
+        if (current == State.DRAINING || current == State.TERMINATED) {
+            throw new IllegalStateException("Cannot transition to READY from " + current + " state");
+        }
+        Exception failure = initializeFailure;
+        if (failure != null) {
+            throw new IllegalStateException("Cannot transition to READY: initialize failed", failure);
+        }
 
+        // Hooks complete before the transition, so traffic is accepted only once they have all returned
         for (GatewayLifecycleHook hook : hooks) {
             hook.onGatewayReady();
         }
+
+        // A drain or terminate that raced the hooks wins; never move out of it back to READY
+        if (!state.compareAndSet(current, State.READY)) {
+            State now = state.get();
+            if (now == State.READY) {
+                return;
+            }
+            throw new IllegalStateException("Cannot transition to READY from " + now + " state");
+        }
+        readySince = Instant.now();
     }
 
     @Override

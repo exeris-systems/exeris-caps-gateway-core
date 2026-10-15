@@ -17,6 +17,14 @@ import eu.exeris.kernel.spi.http.HttpResponse;
  *       security headers, or rate limit quota headers).</li>
  * </ul>
  *
+ * <p><b>Short-circuit and post-routing.</b> When a pre-routing policy short-circuits, the
+ * response is sent as is and no {@link #postRouting} runs, so such a response (401, 429, CORS
+ * preflight 204) carries none of the headers that post-routing policies add (CORS,
+ * security or quota headers). A policy that needs those headers on its own short-circuit
+ * response must set them on the response it returns. Where post-handler work lives is settled by
+ * the response-side ADR that {@code ROADMAP.md} makes the entry condition of 0.2.0; this
+ * behaviour stands until then.
+ *
  * @since 0.1.0
  */
 public interface GatewayPolicy {

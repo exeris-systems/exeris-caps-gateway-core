@@ -110,4 +110,70 @@ class DefaultGatewayLifecycleTransitionTest {
             assertThat(events.stream().filter("drain"::equals).count()).isLessThanOrEqualTo(1);
         }
     }
+
+    @Test
+    @DisplayName("ready hooks run before the gateway accepts traffic")
+    void readyHooksRunBeforeTraffic() throws Exception {
+        DefaultGatewayLifecycle lifecycle = new DefaultGatewayLifecycle();
+        List<Boolean> acceptingDuringHook = new ArrayList<>();
+        lifecycle.registerHook(new GatewayLifecycleHook() {
+            @Override
+            public void onGatewayReady() {
+                acceptingDuringHook.add(lifecycle.isAcceptingTraffic());
+            }
+        });
+        lifecycle.initialize();
+        lifecycle.ready();
+
+        assertThat(acceptingDuringHook).containsExactly(false);
+        assertThat(lifecycle.isAcceptingTraffic()).isTrue();
+        assertThat(lifecycle.readySince()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("a failing ready hook leaves the gateway not accepting traffic")
+    void failingReadyHookKeepsGatewayClosed() throws Exception {
+        DefaultGatewayLifecycle lifecycle = new DefaultGatewayLifecycle();
+        lifecycle.registerHook(new GatewayLifecycleHook() {
+            @Override
+            public void onGatewayReady() throws Exception {
+                throw new IllegalStateException("not ready");
+            }
+        });
+        lifecycle.initialize();
+
+        assertThatThrownBy(lifecycle::ready).hasMessage("not ready");
+        assertThat(lifecycle.isAcceptingTraffic()).isFalse();
+        assertThat(lifecycle.state()).isEqualTo(GatewayLifecycle.State.INITIALIZING);
+        assertThat(lifecycle.readySince()).isNull();
+    }
+
+    @Test
+    @DisplayName("a failing initialize hook is fail-stop: replay re-throws and ready is refused")
+    void failingInitializeHookIsFailStop() throws Exception {
+        DefaultGatewayLifecycle lifecycle = new DefaultGatewayLifecycle();
+        List<String> events = new ArrayList<>();
+        lifecycle.registerHook(new GatewayLifecycleHook() {
+            @Override
+            public void onGatewayInitialize() throws Exception {
+                throw new java.io.IOException("boom");
+            }
+
+            @Override
+            public void onGatewayReady() {
+                events.add("ready");
+            }
+        });
+
+        assertThatThrownBy(lifecycle::initialize).isInstanceOf(java.io.IOException.class).hasMessage("boom");
+        assertThatThrownBy(lifecycle::initialize).isInstanceOf(java.io.IOException.class).hasMessage("boom");
+        assertThatThrownBy(lifecycle::ready)
+                .isInstanceOf(IllegalStateException.class)
+                .hasCauseInstanceOf(java.io.IOException.class);
+        assertThat(lifecycle.isAcceptingTraffic()).isFalse();
+        assertThat(events).isEmpty();
+
+        lifecycle.terminate();
+        assertThat(lifecycle.state()).isEqualTo(GatewayLifecycle.State.TERMINATED);
+    }
 }
