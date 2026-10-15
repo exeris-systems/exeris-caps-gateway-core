@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>eu.exeris.caps</groupId>
+    <artifactId>exeris-caps-gateway-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Exeris Caps :: Gateway Core</name>
+    <description>
+        Substrate capability of the Gateway family (API Gateway, Edge Proxy, Bot Blocker).
+        Provides GatewayLifecycle, IngressBootstrap and PolicyChain against the kernel HTTP SPI.
+    </description>
+    <url>https://github.com/exeris-systems/exeris-caps-gateway-core</url>
+    <inceptionYear>2026</inceptionYear>
+
+    <organization>
+        <name>Exeris Systems</name>
+        <url>https://exeris.eu</url>
+    </organization>
+
+    <!-- commercial per ADR-023 — source-available under the Exeris Commercial License.
+         Production use requires an active Platform SKU subscription or Platform-tier license.
+         Source is public for audit, evaluation, and Code Detachment fork purposes. -->
+    <licenses>
+        <license>
+            <name>Exeris Commercial License</name>
+            <url>https://exeris.eu/licenses/commercial-1.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- JDK 25 LTS, matching the ecosystem baseline (kernel ADR-066, SDK ADR-069,
+             tooling U1). Deliberately no preview flag anywhere: a preview-clean
+             baseline prevents re-pinning to an exact JDK major. -->
+        <maven.compiler.release>25</maven.compiler.release>
+
+        <exeris.sdk.version>0.12.0</exeris.sdk.version>
+        <exeris.kernel.version>0.13.0-SNAPSHOT</exeris.kernel.version>
+        <exeris.tooling.version>0.10.0</exeris.tooling.version>
+
+        <junit.version>5.11.4</junit.version>
+        <assertj.version>3.27.7</assertj.version>
+    </properties>
+
+    <dependencies>
+        <!-- provided, not compile: every Exeris annotation is @Retention(SOURCE), so it
+             is erased at javac and cannot be read at runtime. -->
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-sdk-annotations</artifactId>
+            <version>${exeris.sdk.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- CapabilityLifecycleHooks runtime interface for the conductor -->
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-sdk-composition-lifecycle</artifactId>
+            <version>${exeris.sdk.version}</version>
+        </dependency>
+
+        <!-- Kernel SPI: the HTTP types a handler and a policy are written against -->
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-kernel-spi</artifactId>
+            <version>${exeris.kernel.version}</version>
+        </dependency>
+
+        <!-- Licence-gate tests: the TCK, the kernel's boot path and a driver for it. Test scope only. -->
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-kernel-tck</artifactId>
+            <version>${exeris.kernel.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-kernel-core</artifactId>
+            <version>${exeris.kernel.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-kernel-community</artifactId>
+            <version>${exeris.kernel.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Sibling capability for cross-CAP testing: Service Boundary Core -->
+        <dependency>
+            <groupId>eu.exeris.caps</groupId>
+            <artifactId>exeris-caps-service-boundary-core</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Composition runtime for cross-CAP lifecycle conductor testing -->
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-sdk-composition-runtime</artifactId>
+            <version>${exeris.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.exeris</groupId>
+            <artifactId>exeris-sdk-composition-spec</artifactId>
+            <version>${exeris.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit 5 + AssertJ only per ADR-058. No mocking frameworks. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.16.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>eu.exeris</groupId>
+                            <artifactId>exeris-processor</artifactId>
+                            <version>${exeris.tooling.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>eu.exeris</groupId>
+                <artifactId>exeris-codegen-maven-plugin</artifactId>
+                <version>${exeris.tooling.version}</version>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate</goal>
+                            <goal>verify-capabilities</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.6</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
