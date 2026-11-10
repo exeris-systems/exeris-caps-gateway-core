@@ -79,8 +79,18 @@ public final class DefaultPolicyChain implements PolicyChain {
         // Reverse order (onion pattern)
         for (int i = policies.size() - 1; i >= 0; i--) {
             GatewayPolicy policy = policies.get(i);
-            HttpResponse updated = policy.postRouting(exchange, current);
+            HttpResponse updated;
+            try {
+                updated = policy.postRouting(exchange, current);
+            } catch (Throwable failure) {
+                ResponseBodies.release(current, failure);
+                throw failure;
+            }
             if (updated != null) {
+                if (updated.body() != current.body()) {
+                    // The replaced response is discarded together with its body
+                    ResponseBodies.discard(current);
+                }
                 current = updated;
             }
         }

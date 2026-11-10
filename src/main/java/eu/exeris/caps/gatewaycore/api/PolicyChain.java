@@ -58,6 +58,10 @@ public interface PolicyChain {
      * @param exchange active exchange; non-null
      * @param response the upstream response; non-null
      * @return final transformed response to send downstream; non-null
+     * @implSpec The chain owns the body of the response it holds: it releases the body of a response
+     *           that a policy replaces with one carrying a different body, and releases the body of
+     *           the response in hand before rethrowing a policy failure. The body of the returned
+     *           response belongs to the caller.
      */
     HttpResponse executePostRouting(HttpExchange exchange, HttpResponse response);
 }

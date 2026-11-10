@@ -14,6 +14,13 @@ import java.util.Objects;
  * to terminate request processing immediately on the gateway edge without forwarding to upstream
  * handlers.
  *
+ * <p><b>Body ownership.</b> The body of a short-circuit response belongs to the policy that created
+ * it until the gateway hands the response to the exchange. When the exchange takes the response
+ * the engine owns the body and releases it exactly once; the gateway never closes it afterwards.
+ * If the exchange fails before taking the response, the gateway releases the body exactly once.
+ * A policy must therefore not close the body itself once it has returned the result, and must
+ * not share one body between two results.
+ *
  * @since 0.1.0
  */
 public final class PolicyResult {

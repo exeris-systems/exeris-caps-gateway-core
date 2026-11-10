@@ -12,6 +12,11 @@ import java.util.Objects;
 /**
  * Intercepting {@link HttpExchange} wrapper that invokes {@link PolicyChain#executePostRouting(HttpExchange, HttpResponse)}
  * when downstream handlers respond.
+ *
+ * <p>Body ownership: the response handed to {@code respond} belongs to this wrapper until the
+ * delegate's {@code respond} returns normally. {@link PolicyChain#executePostRouting} releases the
+ * bodies it discards or abandons; if the delegate then fails to take the final response, the body
+ * of that response is released here.
  */
 final class PolicyInterceptingHttpExchange implements HttpExchange {
 
@@ -37,7 +42,7 @@ final class PolicyInterceptingHttpExchange implements HttpExchange {
     public void respond(HttpResponse response) {
         Objects.requireNonNull(response, "response");
         HttpResponse postProcessed = policyChain.executePostRouting(delegate, response);
-        delegate.respond(postProcessed != null ? postProcessed : response);
+        ResponseBodies.respond(delegate, postProcessed != null ? postProcessed : response);
     }
 
     @Override
@@ -51,7 +56,7 @@ final class PolicyInterceptingHttpExchange implements HttpExchange {
             delegate.respond(typedResponse);
         } else if (postProcessed.hasBody()) {
             // A policy that replaced the body supplies the whole response
-            delegate.respond(postProcessed);
+            ResponseBodies.respond(delegate, postProcessed);
         } else {
             delegate.respond(new HttpTypedResponse(
                     postProcessed.status(), postProcessed.headers(), typedResponse.payload()));

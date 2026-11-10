@@ -94,7 +94,7 @@ public final class DefaultIngressBootstrap implements IngressBootstrap {
             // 1. Evaluate pre-routing policies (e.g. CORS preflight, RateLimiting, Auth)
             PolicyResult preResult = policyChain.executePreRouting(exchange);
             if (preResult != null && preResult.isShortCircuit()) {
-                exchange.respond(preResult.response());
+                ResponseBodies.respond(exchange, preResult.response());
                 return;
             }
 
