@@ -15,6 +15,8 @@ import eu.exeris.kernel.spi.memory.LoanedBuffer;
  */
 final class ResponseBodies {
 
+    private static final System.Logger LOG = System.getLogger(ResponseBodies.class.getName());
+
     private ResponseBodies() {
     }
 
@@ -46,16 +48,25 @@ final class ResponseBodies {
         }
         try {
             body.close();
-        } catch (RuntimeException closeFailure) {
+        } catch (Throwable closeFailure) {
             cause.addSuppressed(closeFailure);
         }
     }
 
     /**
      * Releases the body of a response that is being replaced. A failing release is ignored so the
-     * replacement can still be handed over and released in its turn.
+     * replacement can still be handed over and released in its turn; the failure is logged once.
+     * A successful release allocates nothing and logs nothing.
      */
     static void discard(HttpResponse response) {
-        release(response, new Throwable());
+        LoanedBuffer body = response.body();
+        if (body == null) {
+            return;
+        }
+        try {
+            body.close();
+        } catch (Throwable closeFailure) {
+            LOG.log(System.Logger.Level.WARNING, "Failed to release a replaced response body", closeFailure);
+        }
     }
 }
