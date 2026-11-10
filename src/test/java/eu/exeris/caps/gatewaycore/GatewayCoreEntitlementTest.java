@@ -1,5 +1,6 @@
 package eu.exeris.caps.gatewaycore;
 
+import eu.exeris.kernel.spi.contract.EntitlementClass;
 import eu.exeris.kernel.spi.contract.EntitlementRequirement;
 import eu.exeris.kernel.tck.contract.AbstractEntitlementRequirementTck;
 import org.junit.jupiter.api.DisplayName;
@@ -34,5 +35,16 @@ class GatewayCoreEntitlementTest extends AbstractEntitlementRequirementTck {
     void requiresOnlyItsOwnCapability() {
         assertThat(new GatewayCoreEntitlement().requiredCapabilities()).containsExactly("exeris-caps-gateway-core");
         assertThat(GatewayCoreEntitlement.CAPABILITY_ID).isEqualTo("exeris-caps-gateway-core");
+    }
+
+    @Test
+    @DisplayName("It declares the COMMERCIAL entitlement class, stable across calls")
+    void entitlementClassIsCommercialAndStable() {
+        GatewayCoreEntitlement entitlement = new GatewayCoreEntitlement();
+        EntitlementClass first = entitlement.entitlementClass();
+
+        assertThat(first).isEqualTo(EntitlementClass.COMMERCIAL);
+        assertThat(entitlement.entitlementClass()).isSameAs(first);
+        assertThat(new GatewayCoreEntitlement().entitlementClass()).isEqualTo(EntitlementClass.COMMERCIAL);
     }
 }
