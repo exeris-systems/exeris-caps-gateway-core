@@ -25,6 +25,14 @@ import eu.exeris.kernel.spi.http.HttpResponse;
  * the response-side ADR that {@code ROADMAP.md} makes the entry condition of 0.2.0; this
  * behaviour stands until then.
  *
+ * <p><b>Response body ownership in post-routing.</b> The body of the {@code response} passed to
+ * {@link #postRouting} belongs to the policy for the duration of the call. Returning the same
+ * response, or a response carrying the same body instance, keeps the body in flight. Returning a
+ * response with a different body transfers the original body to the chain, which releases it
+ * exactly once; the policy must not close it. If {@code postRouting} throws, the chain releases
+ * the body of the response that was passed in. Once the final response is handed to the exchange
+ * the engine owns its body and releases it exactly once.
+ *
  * @since 0.1.0
  */
 public interface GatewayPolicy {
