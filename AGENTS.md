@@ -14,7 +14,7 @@ Operating contract for AI agents working in this repository.
 ## 1. Mission and scope
 
 `exeris-caps-gateway-core` is a single-module Exeris capability (Layer 1 — Substrate aggregate (Gateway family)). It provides `GatewayLifecycle`, `IngressBootstrap`, `PolicyChain`. Licence: `commercial` — Exeris Commercial License 1.1, source-available
-(ADR-023). It is a proof of concept built against `exeris-kernel` 0.13.0-SNAPSHOT; `README.md` describes
+(ADR-023). It is a proof of concept built against `exeris-kernel` 0.13.1; `README.md` describes
 what it does and does not do.
 
 ## 2. Operating contract and boundaries

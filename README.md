@@ -2,7 +2,7 @@
 
 The substrate of the Gateway family as an Exeris capability. It provides `GatewayLifecycle` (the initialize, ready, drain and terminate phases of a gateway), `IngressBootstrap` (the kernel HTTP handler of the gateway: it checks readiness, counts served requests, runs the policy chain and dispatches to a path-prefix handler or a delegate) and `PolicyChain` (registration and execution of `GatewayPolicy` instances before and after routing).
 
-Status: proof of concept, built against `exeris-kernel` 0.13.0-SNAPSHOT on JDK 25 LTS. The API is not stable and no artefact has been published.
+Status: proof of concept, built against `exeris-kernel` 0.13.1 on JDK 25 LTS. The API is not stable and no artefact has been published.
 
 ## Where it sits
 
@@ -31,7 +31,7 @@ mvn verify                               # pass 2 — generate cap-manifest.json
 
 Both passes are needed after a `clean`: `exeris:generate` runs before `compile`, and `compile` is when the processor writes the metadata it reads. `src/main/generated/java/cap-manifest.json` is committed, so a clean `git status` after `mvn verify` shows the manifest matches the declaration.
 
-The upstreams are not on Maven Central. `exeris-sdk` and `exeris-tooling` are built from source, and `exeris-kernel` 0.13.0-SNAPSHOT is resolved from GitHub Packages, which needs a token with `read:packages`.
+`exeris-sdk` 0.13.3, `exeris-kernel` 0.13.1 and `exeris-tooling` 0.11.0 resolve from Maven Central, so none of them is built from source first and no token is needed. The one sibling that is built from source is the test-scope `exeris-caps-service-boundary-core` 0.1.0-SNAPSHOT, which is published nowhere: run its own two-pass build with `-DskipTests install` before this one.
 
 ## Documentation
 

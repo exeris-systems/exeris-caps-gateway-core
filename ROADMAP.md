@@ -39,7 +39,6 @@ Gaps between the inventory and the code, found in the code:
 
 | Constraint | Effect here | Owner |
 |---|---|---|
-| Kernel licence gate (ADR-088, ADR-089) ships in kernel `0.13.0-SNAPSHOT` | `EntitlementRequirement` and its TCK are only resolvable from that line | `exeris-kernel` |
 | `exeris-caps-service-boundary-core` must be resolvable in CI | It is a test-scope dependency today and, from 0.2.0, an optional `@Requires` | `exeris-caps-service-boundary-core` |
 | ADRs on the response-side seam and on request-path canonicalisation (both accepted before any 0.2.0 starts) | No policy cap starts its 0.2.0 before they are accepted | this repository, `exeris-docs` |
 | No `composition.json` reader | Configuration cannot arrive from a SKU manifest; the SKU wires modules by hand | SKU scaffold |
@@ -50,16 +49,16 @@ Gaps between the inventory and the code, found in the code:
 ## 0.1.0 — the code PR
 
 - [ ] Defects found in the pre-import review are fixed in the import, each with a test
-- [ ] Code imported; first commit on `main`
-- [ ] `@Provides` versions at contract `0.1.0` for `GatewayLifecycle`, `IngressBootstrap`, `PolicyChain`
-- [ ] Kernel `0.13.0-SNAPSHOT`; SDK `0.12.0` and tooling `0.10.0` pins aligned
-- [ ] Artefacts stay `0.1.0-SNAPSHOT` until kernel `0.13.0` is released; a non-snapshot `0.1.0` is cut only after that
-- [ ] Licence enforcement: `GatewayCoreEntitlement` (`EntitlementRequirement`, id `exeris-caps-gateway-core`),
+- [x] Code imported; first commit on `main`
+- [x] `@Provides` versions at contract `0.1.0` for `GatewayLifecycle`, `IngressBootstrap`, `PolicyChain`
+- [x] Kernel `0.13.1`, SDK `0.13.3` and tooling `0.11.0` pins, all from Maven Central
+- [ ] A non-snapshot `0.1.0` is cut; the POM is still `0.1.0-SNAPSHOT`
+- [x] Licence enforcement: `GatewayCoreEntitlement` (`EntitlementRequirement`, id `exeris-caps-gateway-core`),
       registered under `META-INF/services`, with a TCK test and a boot test against the kernel's
       Phase 0 gate, as in `exeris-caps-credential-store`
-- [ ] `build.yml` repaired (repository under test, kernel ref, credential-free where possible) and green on JDK 25 and 26
-- [ ] `cap-manifest.json` regenerated and committed through the two-pass build
-- [ ] POM description and README state what the module provides today, not the HLA list
+- [ ] `build.yml` is credential-free and green on JDK 25 and 26
+- [x] `cap-manifest.json` regenerated and committed through the two-pass build
+- [x] POM description and README state what the module provides today, not the HLA list
 
 **Exit gate:** `mvn verify` green on both JDK rows; the entitlement test fails when the id is absent from the manifest.
 
