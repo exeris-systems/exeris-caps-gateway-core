@@ -89,7 +89,7 @@ class GatewayToServiceBoundaryCompositionTest {
     @DisplayName("Gateway Ingress routes requests into Service Boundary Core API surface with lifecycle coordination")
     void gatewayToServiceBoundaryDataPlane() throws Exception {
         GatewayCoreModule gatewayModule = new GatewayCoreModule();
-        ServiceBoundaryCoreModule sbModule = new ServiceBoundaryCoreModule();
+        ServiceBoundaryCoreModule sbModule = ServiceBoundaryCoreModule.builder().strictRoutes(true).build();
 
         ApiSurfaceRegistry sbRegistry = sbModule.apiSurfaceRegistry();
         IngressBootstrap ingress = gatewayModule.ingressBootstrap();
