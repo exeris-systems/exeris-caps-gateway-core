@@ -11,6 +11,7 @@ import eu.exeris.kernel.spi.http.HttpMethod;
 import eu.exeris.kernel.spi.http.HttpRequest;
 import eu.exeris.kernel.spi.http.HttpStatus;
 import eu.exeris.kernel.spi.http.HttpVersion;
+import eu.exeris.kernel.spi.http.RouteRequirement;
 import eu.exeris.sdk.composition.CapManifest;
 import eu.exeris.sdk.composition.CompositionBinding;
 import eu.exeris.sdk.composition.runtime.CompositionConductor;
@@ -99,6 +100,7 @@ class GatewayToServiceBoundaryCompositionTest {
                 .method(HttpMethod.GET)
                 .pathPattern("/api/v1/health")
                 .actionName("GatewayHealth#check")
+                .requirements(List.of(RouteRequirement.permitAll()))
                 .handler(ex -> {
                     healthActionCalled.set(true);
                     ex.respond(HttpStatus.OK, "{\"status\":\"healthy\"}");
@@ -110,6 +112,7 @@ class GatewayToServiceBoundaryCompositionTest {
                 .method(HttpMethod.POST)
                 .pathPattern("/api/v1/orders/{orderId}")
                 .actionName("Orders#create")
+                .requirements(List.of(RouteRequirement.permitAll()))
                 .handler(ex -> {
                     orderActionCalled.set(true);
                     String orderId = ex.pathParams().get("orderId");
